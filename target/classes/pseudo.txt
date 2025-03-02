@@ -1,0 +1,215 @@
+CLASS Fileextractor(Object):
+    DEFINE FUNCTION __INIT__(self, File)
+        SELF.File = File
+
+    DEFINE FUNCTION Texttxt(self):
+        Resumetext = OPENFILE(SELF.File) IN READ
+
+        IF Resumetext == NULL THEN
+            print("Failed to read:", SELF.File)
+            END
+
+        ELSE:
+            RETURN Resumetext
+        END IF
+
+    DEFINE FUNCTION Textpdf(self):
+        Resumetext = OPENFILE(SELF.File) IN READ
+
+        IF Resumetext == NULL THEN
+            print("Failed to read:", SELF.File)
+            END
+
+        ELSE:
+           RETURN  pdf.Extract(Resumetext)
+        END IF
+
+    DEFINE FUNCTION Textdocx(self):
+        Resumetext = OPENFILE(SELF.File) IN READ
+
+        IF Resumetext == NULL THEN
+            print("Failed to read:", SELF.File)
+            END
+        ELSE:
+            RETURN docx.Extract(Resumetext)
+        END IF
+
+    DEFINE FUNCTION Extractfiletype(self):
+        RETURN Filetype = File["."*]
+
+
+CLASS Contactdetails(Object):
+    DEFINE FUNCTION __INIT__(self, File):
+        SELF.File = File
+
+    DEFINE FUNCTION Extractoremail(self):
+        IF Email == NULL THEN
+            print("No Email found")
+
+        ELSE:
+            Email = MATCH SELF.File CONTAINS PATTERN("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}\\b")
+            RETURN Email
+        END IF
+
+    DEFINE FUNCTION Extractorphone(self):
+        IF Phone == NULL THEN
+            print("No phone number found")
+
+        ELSE:
+            self.Phone = MATCH SELF.File CONTAINS PATTERN("\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,4}?\\)?[-.\\s]?\\d{3,4}[-.\\s]?\\d{4,6}")
+            RETURN Phone
+        END IF
+
+    DEFINE FUNCTION Extractorname(self):
+        IF self.Name == NULL THEN
+            print("No name found")
+
+        ELSE:
+            self.Name = MATCH SELF.File CONTAIN PATTERN("\\b[A-Z][a-z]+(?:\\s[A-Z][a-z]+)+\\b")
+            RETURN self.Name
+        END IF
+
+CLASS Skills(Object):
+    DEFINE FUNCTION __INIT__(self, Resume, Req):
+        SELF.Resume = Resume
+        SELF.Req = Req
+
+    DEFINE FUNCTION Skillscalculator():
+        TRY:
+            Reqskillsarray = []
+            Reqsplitter = MATCH SELF.Req CONTAIN PATTERN("(?i)(?:experience|skills|certifications|looking for$)(.*)")
+            ReqLine = ""
+            WHILE ReqLine = READLINE() != NULL:
+                ReqLine = READLINE(Reqsplitter)
+                NEXT
+                APPEND.Reqskillsarray[Line]
+            END WHILE
+        CATCH:
+            PRINT("Could not read requirements")
+
+        TRY:
+            Resumeskillsarray = []
+            Score = 0
+            Outerlooper = 0
+            Innerlooper = 0
+            Resumeline = ""
+            ResumeSplitter = MATCH SELF.Resume CONTAIN PATTERN("(?i)(?:experience|skills|certifications|worked with$)(.*)")
+
+            WHILE ResumeLine = READLINE() != NULL:
+                    ResumeLine = READLINE(Resumesplitter)
+                    NEXT
+                    APPEND.Resumeskillsarray[Line]
+            END WHILE
+
+            WHILE Outerlooper < LENGTH OF Reqskillsarray
+                WHILE Innerloop < LENGTH OF Resumeskillsarray
+                    IF MATCH Reqskillsarray[Outerlooper] CONTAIN PATTERN Resumeskillsarray[Innerlooper] THEN
+                        Score += 1
+                        Expertise = MATCH Resumeskillarray[Innerlooper] CONTAIN PATTERN("0-9")
+                        Score = Score + Expertise
+                        Innerlooper += 1
+                    END IF
+                END WHILE
+                Outerlooper += 1
+            END WHILE
+        CATCH:
+            PRINT("Could not calculate skills score"
+
+        RETURN Skillsscore
+
+CLASS Education():
+    DEFINE FUNCTION __INIT__(self, Resume, Req):
+            SELF.Resume = Resume
+            SELF.Req = Req
+
+    DEFINE FUNCTION Educationcalculator():
+        TRY:
+            Resumesplitter = MATCH SELF.Resume CONTAIN PATTERN ("\\b(?:Bachelor|Master|PhD|Degree|BSc|MSc)?\\b.*?(?: in | of )?([A-Za-z .]+)?(?: at |, )?(\\bUniversity\\b|\\bCollege\\b|\\bInstitute\\b)?)"
+            Reqsplitter = MATCH SELF.Req CONTAIN PATTERN ("\\b(?:Bachelor|Master|PhD|Degree|BSc|MSc)?\\b.*?")
+            Reqline = ""
+            Resumeline = ""
+            Reqedusarray = []
+            Resumeeduarray = []
+
+            WHILE ReqLine = READLINE() != NULL:
+                ReqLine = READLINE(Reqsplitter)
+                NEXT
+                APPEND.Reqeduarray[Line]
+            END WHILE
+
+            WHILE ResumeLine = READLINE() != NULL:
+                ReqLine = READLINE(Resumesplitter)
+                NEXT
+                APPEND.resumeeduarray[Line]
+            END WHILE
+
+            Score = 0
+            Outerlooper = 0
+            Innerlooper = 0
+
+            WHILE Outerlooper < LENGTH OF Reqeduarray
+                WHILE Innerloop < LENGTH OF Resumeeduarray
+                    IF MATCH Reqeduarray[Outerlooper] CONTAIN PATTERN Resumeeduarray[Innerlooper] THEN
+                        Score += 1
+                        Innerlooper += 1
+                    END IF
+                END WHILE
+                Outerlooper += 1
+            END WHILE
+        CATCH:
+            PRINT("Could not calculate education score"
+
+            RETURN Edusscore
+
+DEFINE FUNCTION Main(no arguments):
+    Resumepath = "path/to/file"
+    Resume = Fileextractor(Resumepath)
+    Reqpath = "path/to/file"
+    Req = Fileextractor(Reqpath)
+
+    IF Filetype == "txt" THEN
+        Resumecontacts = Contactdetails(Resume.Texttxt)
+        Calculatedskill = Skills(Resume.Texttxt, Req.Texttxt)
+        Educationcalculator = Education(Resume.Texttxt, Req.Testtxt
+
+
+    ELIF Filetype == "pdf" THEN
+        Txtcontacts = Contactdetails(Resume.Textpdf)
+        Resumeskills =Skills(Resume.Textpdf, Req.Testpdf)
+        Educationcalculator = (EducationResume.Textpdf, Req.Testpdf)
+
+    ELIF Filetype == "docx" THEN
+        Txtcontacts = Contactdetails(Resume.Textdocx)
+        Resumeskills = Skills(Resume.Textdocx, Req.Testdocx)
+        Educationcalculator = Education(Resume.Textpdf, Req.Testpdf)
+
+    ELSE:
+        PRINT("Invalid file type:", Filetype)
+
+    Finescore = Educationcalculator.calculator + Resumeskills.Skillscalculator
+    Insertsql = "INSERT INTO resumes (name, email, phone, Employabilityscore) VALUES (Resumecontacts.Extractorname, Resumecontacts.Extractoremail, Resumecontacts.Extractorphone, Finalscore)
+    SQL.EXECUTE(Insertsql)
+
+Main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
