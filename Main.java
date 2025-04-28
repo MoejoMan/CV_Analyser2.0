@@ -4,6 +4,7 @@ import java.util.List;
 import java.sql.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.*;
 
 public class Main {
     public static String[] skills = {"Java", "Python", "C++", "C#", "SQL", "JavaScript", "PHP", "HTML", "Git", "AWS", "Docker", "Command Line", "Linux", "Shell", "CMD"};
@@ -32,6 +33,9 @@ public class Main {
             System.out.println("- " + job);
         }
 
+        Map<String, Double> resumeScores = new HashMap<>(); // Store resume and its total score
+
+
         // Process resumes
         for (String resumeFile : resumeFiles) {
             String resumeText = Fileutils.readFile(resumeFile);
@@ -44,6 +48,9 @@ public class Main {
                 extractEducation(resumeText);
                 extractWorkExperience(resumeText);
 
+                double totalMatchScore = 0.0;
+                int jobCount = 0;
+
                 for (String jobDescription : jobDescriptions) {
                     File jobFile = new File(jobDescription.trim());
 
@@ -55,6 +62,8 @@ public class Main {
                             extractSkills(jobDescriptionText);
 
                             double matchPercentage = RankingsManager.calculateSkillMatch(resumeText, jobDescriptionText, skills);
+                            totalMatchScore += matchPercentage;
+                            jobCount++;
                             System.out.printf("Skill Match Percentage for Job Description file: %.2f%%\n", matchPercentage);
                         } else {
                             System.out.println("Failed to read or file is empty: " + jobDescription);
@@ -64,17 +73,34 @@ public class Main {
                         extractSkills(jobDescription);
 
                         double matchPercentage = RankingsManager.calculateSkillMatch(resumeText, jobDescription, skills);
+                        totalMatchScore += matchPercentage;
+                        jobCount++;
                         System.out.printf("Skill Match Percentage for Manual Description: %.2f%%\n", matchPercentage);
                     }
                 }
+
+                // Calculate the average match score for this resume
+                if (jobCount > 0) {
+                    double averageMatchScore = totalMatchScore / jobCount;
+                    resumeScores.put(resumeFile, averageMatchScore); // Store the average score for the resume
+                    System.out.printf("Average Match Score for Resume %s: %.2f%%\n", resumeFile, averageMatchScore);
+                }
+
             } else {
                 System.out.println("Failed to read the resume: " + resumeFile);
             }
         }
+
+        // Sorting resumes based on the match scores (descending order)
+        System.out.println("\n--- Overall Ranking ---");
+        resumeScores.entrySet()
+                .stream()
+                .sorted((entry1, entry2) -> Double.compare(entry2.getValue(), entry1.getValue())) // Sort in descending order
+                .forEach(entry -> System.out.printf("Resume: %s, Average Match Score: %.2f%%\n", entry.getKey(), entry.getValue()));
     }
 
 
-public static String extractSkills(String resumeText) {
+    public static String extractSkills(String resumeText) {
         StringBuilder skillsFound = new StringBuilder();
         for (String skill : skills) {
             if (resumeText.contains(skill)) {
